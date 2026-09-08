@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shot Deadline — IRONWAKE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100,400;100,500;100,600;100,700;125,700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#EEF1F4; --card:#FFFFFF; --line:#D3D9E0; --ink:#14202B; --ink-2:#4A5A6A; --ink-3:#8797A6;
+    --signal:#0B5FFF;
+    --s-not:#C9D2DB; --s-prog:#7FA8E8; --s-fail:#E3473F; --s-rev:#F0B429; --s-appr:#3FA66B; --s-final:#1F6E44;
+    --sans:'Archivo',system-ui,sans-serif; --mono:'IBM Plex Mono',ui-monospace,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.45;height:100%}
+  button{font:inherit;cursor:pointer;color:inherit;background:none;border:0}
+  button:focus-visible,input:focus-visible{outline:2px solid var(--signal);outline-offset:2px}
+  header{display:flex;align-items:center;gap:20px;padding:12px 22px;background:var(--card);border-bottom:1px solid var(--line)}
+  .show{font-weight:700;font-stretch:125%;font-size:18px;letter-spacing:.02em}
+  .show small{font-weight:400;font-stretch:100%;color:var(--ink-3);margin-left:10px;font-size:13px}
+  .clock{margin-left:auto;font-family:var(--mono);font-size:12.5px;color:var(--ink-2)}
+  .clock b{color:var(--ink);font-weight:500}
+  header a{color:var(--signal);text-decoration:none;font-weight:500;font-size:13px}
+  main{display:grid;grid-template-columns:minmax(0,1fr) 430px;height:calc(100vh - 53px)}
+  @media (max-width:1000px){main{grid-template-columns:1fr;height:auto}}
+  #board{overflow:auto;padding:18px 22px;display:flex;flex-direction:column;gap:14px}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px 14px}
+  .kpi .v{font-family:var(--mono);font-size:22px;font-weight:500}
+  .kpi .l{color:var(--ink-3);font-size:12px}
+  .kpi.bad .v{color:var(--s-fail)}
+  .seq{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:12px 14px}
+  .seq .hd{display:flex;align-items:baseline;gap:12px;margin-bottom:8px}
+  .seq .hd b{font-size:15px;font-weight:600}
+  .seq .hd .nm{color:var(--ink-2)}
+  .seq .hd .lock{margin-left:auto;font-family:var(--mono);font-size:12.5px;color:var(--ink-2)}
+  .seq .hd .lock.bad{color:var(--s-fail);font-weight:500}
+  .seq.late{border-left:4px solid var(--s-fail)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:5px}
+  .shot{border-radius:5px;padding:5px 7px;font-family:var(--mono);font-size:11px;color:#fff;position:relative;text-align:left;border:1px solid transparent}
+  .shot.not_started{background:var(--s-not);color:var(--ink-2)}
+  .shot.in_progress{background:var(--s-prog)}
+  .shot.render_failed{background:var(--s-fail)}
+  .shot.in_review{background:var(--s-rev);color:var(--ink)}
+  .shot.approved{background:var(--s-appr)}
+  .shot.final{background:var(--s-final)}
+  .shot small{display:block;font-size:9.5px;opacity:.85;font-family:var(--sans)}
+  .shot .late{position:absolute;top:3px;right:5px;font-size:9px;font-weight:700}
+  .shot.flag{outline:2px solid var(--ink);outline-offset:1px}
+  .legend{display:flex;gap:14px;font-size:12px;color:var(--ink-2);flex-wrap:wrap}
+  .legend i{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:-1px;margin-right:4px}
+  .farms{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .farm{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px 14px;font-size:12.5px;color:var(--ink-2)}
+  .farm b{display:block;color:var(--ink);font-weight:600;margin-bottom:4px}
+  .farm .bar{height:6px;background:var(--bg);border-radius:3px;margin:6px 0;overflow:hidden}
+  .farm .bar i{display:block;height:100%;background:var(--signal)}
+  .log{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px 14px;font-family:var(--mono);font-size:11.5px;color:var(--ink-2);max-height:160px;overflow:auto}
+  .log .ERROR{color:var(--s-fail)} .log .WARN{color:#A67300}
+  /* chat */
+  #chat{border-left:1px solid var(--line);background:var(--card);display:flex;flex-direction:column}
+  @media (max-width:1000px){#chat{border-left:0;border-top:1px solid var(--line);height:70vh}}
+  .msgs{flex:1;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
+  .m.user{align-self:flex-end;background:var(--bg);border-radius:12px 12px 2px 12px;padding:8px 12px;max-width:85%}
+  .m.tool{font-family:var(--mono);font-size:11.5px;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+  .m.tool .h{padding:6px 10px;color:var(--ink-3);border-bottom:1px solid var(--line)}
+  .m.tool .h b{color:var(--ink-2);font-weight:500}
+  .m.tool pre{margin:0;padding:8px 10px;white-space:pre-wrap;word-break:break-word;max-height:150px;overflow:auto}
+  .m.tool .r{display:none;padding:6px 10px;border-top:1px dashed var(--line);color:var(--ink-3);white-space:pre-wrap;word-break:break-word;max-height:90px;overflow:auto}
+  .m.tool.open .r{display:block}
+  .m.text{line-height:1.55}
+  .m.text .who{font-family:var(--mono);font-size:11px;color:var(--ink-3)}
+  .m.text.planner{border-left:3px solid var(--signal);padding-left:12px}
+  .m.text p{margin:0 0 8px}
+  .m.text pre{font-family:var(--mono);font-size:11.5px;background:var(--bg);border-radius:6px;padding:8px;overflow:auto}
+  .m.text ul{padding-left:18px;margin:4px 0}
+  .m.text code{font-family:var(--mono);font-size:12px;background:var(--bg);padding:1px 4px;border-radius:3px}
+  .m.err{color:var(--s-fail);font-size:12.5px}
+  .thinking{color:var(--ink-3);font-size:12.5px;font-family:var(--mono)}
+  .ask{border-top:1px solid var(--line);padding:12px 14px 14px}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+  .chips button{font-size:12px;color:var(--ink-2);border:1px solid var(--line);border-radius:999px;padding:4px 10px}
+  .chips button:hover{border-color:var(--ink-2);color:var(--ink)}
+  .box{display:flex;gap:8px}
+  .box input{flex:1;border:1px solid var(--line);border-radius:8px;padding:10px 12px;font:inherit}
+  .box button{background:var(--signal);color:#fff;font-weight:600;border-radius:8px;padding:0 14px}
+  .box button:disabled{opacity:.4;cursor:default}
+</style>
+</head>
+<body>
+<header>
+  <div class="show">IRONWAKE<small>Shot Deadline · VFX war room</small></div>
+  <a id="dash" href="#" target="_blank" rel="noopener">Open Grafana dashboard</a>
+  <div class="clock">production hour <b id="hour">0</b> · refresh 10s</div>
+</header>
+<main>
+  <section id="board">
+    <div class="kpis" id="kpis"></div>
+    <div id="seqs"></div>
+    <div class="legend"><span><i style="background:var(--s-not)"></i>not started</span><span><i style="background:var(--s-prog)"></i>in progress</span><span><i style="background:var(--s-fail)"></i>render failed</span><span><i style="background:var(--s-rev)"></i>in review</span><span><i style="background:var(--s-appr)"></i>approved</span><span><i style="background:var(--s-final)"></i>final</span></div>
+    <div class="farms" id="farms"></div>
+    <div class="log" id="log"></div>
+  </section>
+  <aside id="chat">
+    <div class="msgs" id="msgs"><div class="m text"><div class="who">shot deadline</div>Ask why a sequence is late. The agent reads render metrics and logs through Grafana's MCP server, records what it found as an annotation, and writes the replan and the producer's note.</div></div>
+    <div class="ask">
+      <div class="chips" id="chips"></div>
+      <div class="box"><input id="q" placeholder="Why is Sequence 040 late?" autocomplete="off"><button id="send">Ask</button></div>
+    </div>
+  </aside>
+</main>
+<script>
+const $=s=>document.querySelector(s); const esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const st={cid:null,busy:false,flag:new Set()};
+const CHIPS=['Why is Sequence 040 late?','Which farm has spare capacity right now?','Is Northlight blocked on the farm or on reviews?','Open an incident for the SEQ040 render failures','Write the morning status note for the producer'];
+$('#chips').innerHTML=CHIPS.map(c=>`<button>${esc(c)}</button>`).join('');
+$('#chips').querySelectorAll('button').forEach(b=>b.onclick=()=>{$('#q').value=b.textContent;ask();});
+fetch('/api/config').then(r=>r.json()).then(c=>{ if(c.grafana_url) $('#dash').href=`${c.grafana_url}/d/${c.dashboard_uid}`; else $('#dash').style.display='none';});
+
+async function refresh(){
+  const b=await (await fetch('/api/board')).json();
+  $('#hour').textContent=b.hour;
+  const all=b.sequences.flatMap(s=>s.shots);
+  const late=all.filter(s=>s.days_to_due<0).length, failed=all.filter(s=>s.status==='render_failed').length, fin=all.filter(s=>['final','approved'].includes(s.status)).length;
+  const nearest=b.sequences.reduce((a,s)=>s.days_to_lock<a.days_to_lock?s:a);
+  $('#kpis').innerHTML=`<div class="kpi ${late?'bad':''}"><div class="v">${late}</div><div class="l">shots past due</div></div><div class="kpi ${failed?'bad':''}"><div class="v">${failed}</div><div class="l">render failed</div></div><div class="kpi"><div class="v">${fin}/${all.length}</div><div class="l">approved or final</div></div><div class="kpi"><div class="v">${nearest.days_to_lock.toFixed(1)}d</div><div class="l">to lock · ${nearest.sequence}</div></div>`;
+  $('#seqs').innerHTML=b.sequences.map(s=>{const lateN=s.shots.filter(x=>x.days_to_due<0||x.status==='render_failed').length; return `<div class="seq ${lateN>2?'late':''}" style="margin-bottom:10px"><div class="hd"><b>${s.sequence}</b><span class="nm">${esc(s.name)}</span><span class="lock ${s.days_to_lock<10?'bad':''}">lock in ${s.days_to_lock.toFixed(1)}d · ${s.shots.length} shots · ${lateN} at risk</span></div><div class="grid">${s.shots.map(x=>`<div class="shot ${x.status} ${st.flag.has(x.shot)?'flag':''}" title="${esc(x.vendor)} · due in ${x.days_to_due}d · ${x.fails} failed renders">${x.shot.split('_')[1]}${x.days_to_due<0?'<span class="late">LATE</span>':''}<small>${esc(x.vendor.split(' ')[0])}${x.ocean?' · ocean':''}</small></div>`).join('')}</div></div>`}).join('');
+  const farms=Object.keys(b.queue); const util=f=>{const ns=Object.entries(b.gpu).filter(([n])=>n.startsWith(f.split('-')[0])); return ns.reduce((a,[,v])=>a+v,0)/Math.max(1,ns.length)};
+  const vend={'halcyon-farm':'Halcyon VFX','northlight-farm':'Northlight','ironwake-farm':'Ironwake In-house'};
+  $('#farms').innerHTML=farms.map(f=>`<div class="farm"><b>${f}</b>queue ${b.queue[f]} jobs · review turnaround ${Math.round(b.review_turnaround[vend[f]])}h<div class="bar"><i style="width:${(util(f)*100).toFixed(0)}%"></i></div>GPU ${(util(f)*100).toFixed(0)}% busy</div>`).join('');
+  $('#log').innerHTML=b.events.slice().reverse().map(e=>`<div class="${e.level}">h${e.hour} ${esc(e.body)}</div>`).join('');
+}
+refresh(); setInterval(refresh,10000);
+
+function add(html,cls){const d=document.createElement('div');d.className='m '+cls;d.innerHTML=html;$('#msgs').appendChild(d);$('#msgs').scrollTop=1e9;return d;}
+function md(t){t=esc(t).replace(/```(\w+)?\n([\s\S]*?)```/g,(m,l,c)=>`<pre>${c}</pre>`).replace(/`([^`]+)`/g,'<code>$1</code>').replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>');
+  t=t.replace(/^(?:[-*] .*(?:\n|$))+/gm,b=>'<ul>'+b.trim().split('\n').map(l=>'<li>'+l.replace(/^[-*] /,'')+'</li>').join('')+'</ul>');
+  return t.split(/\n{2,}/).map(p=>p.startsWith('<')?p:`<p>${p.replace(/\n/g,'<br>')}</p>`).join('');}
+async function ask(){
+  const q=$('#q').value.trim(); if(!q||st.busy) return; st.busy=true; $('#send').disabled=true; $('#q').value='';
+  add(esc(q),'user'); let th=add('triage querying Grafana','thinking'); let findings='';
+  try{
+    const r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q,conversation_id:st.cid})});
+    const rd=r.body.getReader(); const dec=new TextDecoder(); let buf='';
+    while(true){const {value,done}=await rd.read(); if(done) break; buf+=dec.decode(value,{stream:true}); let i;
+      while((i=buf.indexOf('\n\n'))>=0){const line=buf.slice(0,i).trim(); buf=buf.slice(i+2); if(!line.startsWith('data:')) continue; const e=JSON.parse(line.slice(5));
+        if(e.kind==='start') st.cid=e.conversation_id;
+        else if(e.kind==='tool_call'){const a=e.args; const body=a.expr||a.logql||a.query||a.text||a.title||JSON.stringify(a); const d=add(`<div class="h"><b>${esc(e.name)}</b> via mcp-grafana</div><pre>${esc(body)}</pre><div class="r"></div>`,'tool'); d.onclick=()=>d.classList.toggle('open'); th.remove(); $('#msgs').appendChild(th);}
+        else if(e.kind==='tool_result'){const last=[...document.querySelectorAll('.m.tool')].pop(); if(last) last.querySelector('.r').textContent=e.preview;}
+        else if(e.kind==='text'){ if(e.agent==='triage'){findings=e.text; add(`<div class="who">triage</div>${md(e.text)}`,'text'); th.textContent='planner writing the replan';} else add(`<div class="who">planner</div>${md(e.text)}`,'text planner'); }
+        else if(e.kind==='error') add(esc(e.error),'err'); }}
+  }catch(err){add(esc(err.message),'err');}
+  th.remove(); st.busy=false; $('#send').disabled=false;
+  const shots=[...findings.matchAll(/SEQ\d{3}_\d{4}/g)].map(m=>m[0]); if(shots.length){st.flag=new Set(shots); refresh();}
+}
+$('#send').onclick=ask; $('#q').addEventListener('keydown',e=>{if(e.key==='Enter') ask();});
+</script>
+</body>
+</html>
