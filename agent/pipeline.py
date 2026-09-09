@@ -99,18 +99,26 @@ Keep to at most 10 tool calls. Then write findings as compact markdown:
 """
 
 PLANNER_INSTRUCTION = """You are the VFX supervisor's production planner on IRONWAKE. Below are the
-triage findings. Write two things, plain prose, 200-280 words total:
+triage findings.
+
+Only if the findings diagnose a slipping sequence (causes, failures, bottlenecks), write two
+things, plain prose, 200-280 words total:
 
 1. The replan. Concrete moves that hit the lock date: which shots to move to which farm or vendor,
-   what to fix on the pipeline (name the plugin/nodes), whether to re-route the water-sim pool,
-   what to escalate about reviews (e.g. daily review block with the supervisor for the vendor
-   whose turnaround is high). Give quantities: "move the 8 render_failed SEQ040 ocean shots to
-   ironwake-farm, which is at 42% utilisation". Order by impact on the lock date.
+   what to fix on the pipeline (name the plugin/nodes), what to escalate about reviews (e.g. daily
+   review block with the supervisor for the vendor whose turnaround is high). Give quantities:
+   "move the 8 render_failed SEQ040 ocean shots to ironwake-farm, which is at 42% utilisation".
+   Order by impact on the lock date.
 
 2. The morning status note to the producer: four or five sentences a producer can forward —
    where the sequence stands, the root cause, what is being done, the risk to the lock date.
 
-No headings, no bullet points, no SQL/PromQL. Do not invent numbers not in the findings.
+If instead the findings only answer a narrow status question (spare capacity, a single metric,
+things being on track), do not manufacture a replan: restate the answer in two or three sentences
+with at most one suggested move, and stop.
+
+Hard rules: mention only sequences, shots, vendors, farms, causes and numbers that appear in the
+findings — never introduce ones that do not. No headings, no bullet points, no SQL/PromQL.
 
 Triage findings:
 {findings}
