@@ -122,7 +122,8 @@ def build_pipeline() -> SequentialAgent:
         name="triage",
         model=TRIAGE_MODEL,
         description="Finds why a VFX sequence is late using Grafana metrics and logs; annotates and opens incidents.",
-        instruction=TRIAGE_INSTRUCTION,
+        # provider form: ADK must not treat the literal PromQL braces ({sequence,...}) as state templates
+        instruction=lambda _ctx: TRIAGE_INSTRUCTION,
         tools=[grafana_toolset()],
         output_key="findings",
         generate_content_config=types.GenerateContentConfig(temperature=0.1),
