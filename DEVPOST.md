@@ -25,6 +25,6 @@ Real ingestion from farm managers (Deadline, OpenCue) and review tools (ShotGrid
 google-adk, google-genai, Gemini 2.5 Pro, Vertex AI, Cloud Run, Secret Manager, Grafana Cloud (Mimir, Loki, annotations, IRM), mcp-grafana, OpenTelemetry, FastAPI
 
 ## Links
-- Hosted app: <CLOUD RUN URL>
+- Hosted app: https://shot-deadline-769027363263.us-central1.run.app
 - Repo: https://github.com/PreScale-Systems/shot-deadline
 - Video: <YOUTUBE URL>
