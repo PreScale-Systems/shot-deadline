@@ -26,5 +26,5 @@ google-adk, google-genai, Gemini 2.5 Pro, Vertex AI, Cloud Run, Secret Manager, 
 
 ## Links
 - Hosted app: <CLOUD RUN URL>
-- Repo: <GITHUB URL>
+- Repo: https://github.com/PreScale-Systems/shot-deadline
 - Video: <YOUTUBE URL>
