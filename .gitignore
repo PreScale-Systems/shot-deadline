@@ -6,3 +6,12 @@ jobs/
 .DS_Store
 .omc/
 bin/
+
+# video production artifacts (deliverable is the uploaded video, not the build tree)
+node_modules/
+video/remotion/node_modules/
+video/remotion/out/
+video/audio/.tts-venv/
+video/audio/*.wav
+video/assets/*.webm
+.playwright-mcp/
