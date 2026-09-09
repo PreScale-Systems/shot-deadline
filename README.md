@@ -4,6 +4,8 @@
 
 Built for the **Agentic Cinema hackathon — Grafana Labs track**, on Google Cloud Agent Builder (ADK) + Gemini, with the official `mcp-grafana` server at runtime.
 
+**[▶ Watch the 3-minute demo](https://youtu.be/5iJNkMvjNho)** · **[Live app](https://shot-deadline-769027363263.us-central1.run.app)**
+
 ## Why this exists
 
 A VFX supervisor tracks hundreds of shots across vendors against a picture-lock date. When a sequence slips, the answer is spread across the farm's queue, GPU nodes, render logs, and review turnaround — five dashboards and three vendor emails. Shot Deadline answers the question in one place, with every PromQL and LogQL query shown, and turns the answer into moves.
@@ -21,7 +23,7 @@ telemetry/sim.py ──OTLP (metrics + logs)──▶ Grafana Cloud OTLP gateway
 
 - **The agent only reads Grafana through the official MCP server** (`agent/pipeline.py`: `MCPToolset` + `StdioConnectionParams` → `mcp-grafana -t stdio`), with a tool filter of query, search, annotation and incident tools. Its instruction is a fixed triage procedure: status → where the work is stuck → log evidence → review latency → distinguish farm fault vs vendor capacity vs review bottleneck → annotate.
 - **The telemetry is real OpenTelemetry.** `telemetry/sim.py` runs a time-compressed production (one production hour per `TICK_SECONDS`) and exports observable gauges, counters and logs through the OTLP HTTP exporter to your Grafana Cloud stack: `vfx_shots`, `vfx_shot_days_to_due`, `vfx_sequence_days_to_lock`, `render_queue_depth`, `render_jobs_failed_total`, `render_jobs_completed_total`, `gpu_utilization_ratio`, `review_turnaround_hours`, and `RENDER FAILED …` log lines with shot/node/error attributes.
-- **The dashboard** (`grafana/dashboard.json`, imported by `scripts/provision.py`) shows days to lock, shots past due, failures by vendor/node/error, queue depth, GPU utilisation, review turnaround and the render log. Agent annotations appear on it (tag `shot-deadline`). Suggested alert rules are in `grafana/alerts.md`.
+- **The dashboard** (`grafana/dashboard.json`, imported by `scripts/provision.py`) shows days to lock, shots past due, failures by vendor/node/error, queue depth, GPU utilisation, review turnaround and the render log. Agent annotations appear on it, tagged with the sequence and cause (e.g. `SEQ040`, `triage`). Suggested alert rules are in `grafana/alerts.md`.
 - **The UI** (`web/index.html`) is the shot board — sequences, shots coloured by status, farms with queue and GPU load, the live log — with the agent chat beside it. Shots the triage names get outlined on the board.
 
 Runtime integrations, in code:
